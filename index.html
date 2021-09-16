@@ -67,6 +67,68 @@
         <td>$5</td>
     </tr>
  </table>
+ <hr>
+ <h3>Aho-Corasick algorithm</h3>
+ <blockquote>
+    In computer science, the Aho–Corasick algorithm is a string-searching algorithm invented by Alfred V. Aho and Margaret J. Corasick.[1] It is a kind of dictionary-matching algorithm that locates elements of a finite set of strings (the "dictionary") within an input text. It matches all strings simultaneously. The complexity of the algorithm is linear in the length of the strings plus the length of the searched text plus the number of output matches. Note that because all matches are found, there can be a quadratic number of matches if every substring matches (e.g. dictionary = a, aa, aaa, aaaa and input string is aaaa).
+    Informally, the algorithm constructs a finite-state machine that resembles a trie with additional links between the various internal nodes. These extra internal links allow fast transitions between failed string matches (e.g. a search for cat in a trie that does not contain cat, but contains cart, and thus would fail at the node prefixed by ca), to other branches of the trie that share a common prefix (e.g., in the previous case, a branch for attribute might be the best lateral transition). This allows the automaton to transition between string matches without the need for backtracking.
+ </blockquote>
+ <a href="https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm">Link for the description</a>
+ <pre>
+    const int K = 26;
+
+    struct Vertex {
+        int next[K];
+        bool leaf = false;
+        int p = -1;
+        char pch;
+        int link = -1;
+        int go[K];
+    
+        Vertex(int p=-1, char ch='$') : p(p), pch(ch) {
+            fill(begin(next), end(next), -1);
+            fill(begin(go), end(go), -1);
+        }
+    };
+    
+    vector<Vertex> t(1);
+    
+    void add_string(string const& s) {
+        int v = 0;
+        for (char ch : s) {
+            int c = ch - 'a';
+            if (t[v].next[c] == -1) {
+                t[v].next[c] = t.size();
+                t.emplace_back(v, ch);
+            }
+            v = t[v].next[c];
+        }
+        t[v].leaf = true;
+    }
+    
+    int go(int v, char ch);
+    
+    int get_link(int v) {
+        if (t[v].link == -1) {
+            if (v == 0 || t[v].p == 0)
+                t[v].link = 0;
+            else
+                t[v].link = go(get_link(t[v].p), t[v].pch);
+        }
+        return t[v].link;
+    }
+    
+    int go(int v, char ch) {
+        int c = ch - 'a';
+        if (t[v].go[c] == -1) {
+            if (t[v].next[c] != -1)
+                t[v].go[c] = t[v].next[c];
+            else
+                t[v].go[c] = v == 0 ? 0 : go(get_link(v), ch);
+        }
+        return t[v].go[c];
+    } 
+ </pre>
  </style>
  </body>
  </head>
